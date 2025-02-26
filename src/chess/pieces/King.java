@@ -4,11 +4,15 @@ import boardgame.Board;
 import boardgame.Position;
 import chess.ChessPiece;
 import chess.Color;
+import chess.ChessMatch;
 
 public class King extends ChessPiece {
 
-    public King(Board board, Color color) {
+    private ChessMatch chessMatch;
+
+    public King(Board board, Color color, ChessMatch chessMatch) {
         super(board, color);
+        this.chessMatch = chessMatch;
     }
 
     @Override
@@ -75,6 +79,39 @@ public class King extends ChessPiece {
             mat[p.getRow()][p.getColumn()] = true;
         }
 
+        //CASTLING
+        if (getMoveCount() == 0 && !chessMatch.getCheck()) {
+
+            //King side
+            Position posT1 = new Position(position.getRow(), position.getColumn() + 3);
+            if (testRookCastling(posT1)) {
+                Position p1 = new Position(position.getRow(), position.getColumn() + 1);
+                Position p2 = new Position(position.getRow(), position.getColumn() + 2);
+                if (getBoard().positionExists(p1) && getBoard().positionExists(p2)
+                        && getBoard().piece(p1) == null && getBoard().piece(p2) == null) {
+                    mat[position.getRow()][position.getColumn() + 2] = true;
+                }
+            }
+
+            // Queen side
+            Position posT2 = new Position(position.getRow(), position.getColumn() - 4);
+            if (testRookCastling(posT2)) {
+                Position p1 = new Position(position.getRow(), position.getColumn() - 1);
+                Position p2 = new Position(position.getRow(), position.getColumn() - 2);
+                Position p3 = new Position(position.getRow(), position.getColumn() - 3);
+                if (getBoard().positionExists(p1) && getBoard().positionExists(p2) && getBoard().positionExists(p3)
+                        && getBoard().piece(p1) == null && getBoard().piece(p2) == null && getBoard().piece(p3) == null) {
+                    mat[position.getRow()][position.getColumn() - 2] = true;
+                }
+            }
+        }
+
         return mat;
     }
+
+    private boolean testRookCastling(Position position){
+        ChessPiece p = (ChessPiece)getBoard().piece(position);
+        return p != null && p instanceof Rook && p.getMoveCount() == 0 && p.getColor() == getColor();
+    }
+
 }
